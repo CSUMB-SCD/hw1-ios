@@ -9,7 +9,7 @@
 import UIKit
 import AlamofireImage
 
-class NowPlayingViewController: UIViewController,  UITableViewDataSource {
+class NowPlayingViewController: UIViewController,  UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var tableView: UITableView!
     
@@ -19,6 +19,7 @@ class NowPlayingViewController: UIViewController,  UITableViewDataSource {
     var refresh: UIRefreshControl!
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.delegate = self
         refresh = UIRefreshControl()
         refresh.addTarget(self, action: #selector(NowPlayingViewController.didPullToRefresh(_:)), for: .valueChanged)
         tableView.insertSubview(refresh, at: 0)
@@ -58,10 +59,19 @@ class NowPlayingViewController: UIViewController,  UITableViewDataSource {
         }
         task.resume()
         
+        
     }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 200
+    }
+    
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return movies.count
     }
+    
+    
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
