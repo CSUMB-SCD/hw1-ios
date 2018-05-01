@@ -14,7 +14,7 @@ class NowPlayingViewController: UIViewController,  UITableViewDataSource, UITabl
     @IBOutlet weak var tableView: UITableView!
     
     @IBOutlet weak var indicator: UIActivityIndicatorView!
-    var movies: [[String: Any]] = []
+    var movies: [Movie] = []
     
     var refresh: UIRefreshControl!
     override func viewDidLoad() {
@@ -32,38 +32,19 @@ class NowPlayingViewController: UIViewController,  UITableViewDataSource, UITabl
         fetchMovies()
     }
     func fetchMovies(){
-        let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed")!
-        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
-        let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
-        let task = session.dataTask(with: request) { (data, response, error) in
-            // This will run when the network request returns
-            if let error = error {
-                print(error.localizedDescription)
-            } else if let data = data {
-                let dataDictionary = try! JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
-                
-                // TODO: Get the array of movies
-                let movies = dataDictionary["results"] as! [[String: Any]]
-                
-                
-                // TODO: Store the movies in a property to use elsewhere
-                
+        MovieApiManager().nowPlayingMovies { (movies: [Movie]?, error: Error?) in
+            if let movies = movies {
                 self.movies = movies
-                // TODO: Reload your table view data
-             
                 self.tableView.reloadData()
                 self.indicator.stopAnimating()
                 self.refresh.endRefreshing()
                 
             }
         }
-        task.resume()
-        
-        
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 200
+        return 272
     }
     
     
@@ -74,19 +55,11 @@ class NowPlayingViewController: UIViewController,  UITableViewDataSource, UITabl
     
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "NowPlayingMovieCell", for: indexPath) as! NowPlayingMovieCell
         
-        let movie = movies[indexPath.row]
+        cell.movie = movies[indexPath.row]
         
-        let title = movie["title"] as! String
-        let overview = movie["overview"] as! String
-        let posterPathString = movie["poster_path"] as! String
-        let baseURLString = "https://image.tmdb.org/t/p/w500"
-        let posterURL = URL(string: baseURLString + posterPathString)!
         
-        cell.img.af_setImage(withURL: posterURL)
-        cell.titleLabel.text = title
-        cell.overviewLabel.text = overview
         return cell
     }
     
